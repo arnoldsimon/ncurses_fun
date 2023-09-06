@@ -25,13 +25,14 @@ int main()
 	char s_head = '@';
 	char s_body = '#';
 	
-	//snake and board
-	bool board[GAME_HEIGHT][GAME_WIDTH] = {0};
-	std::vector<std::vector<int>> snake; //the rep as a vector
+	//snake and board 
 	int snake_dir;
+	std::vector<std::vector<int>> snake; //the rep as a vector
+	bool board[GAME_HEIGHT][GAME_WIDTH] = {0};
 
 	//..misc
-	int count, move;
+	int move;
+	int food_x, food_y;
 
 	//..terminate if terminal too small
 	getmaxyx(stdscr, scr_h, scr_w);
@@ -48,7 +49,6 @@ int main()
 	refresh();
 
 	//..init vars
-	count = 0;
 	snake_dir = KEY_UP;
 	snake.push_back(std::vector<int>{GAME_HEIGHT/2, GAME_WIDTH/2}); //snake begin at center of screen
 	board[snake[0][0]][snake[0][1]] = true;							//marking snake head in board
@@ -77,8 +77,16 @@ int main()
 		}
 		else if (move != ERR || move != snake_dir)
 		{
-			if (move == KEY_UP || move == KEY_DOWN || move == KEY_LEFT || move == KEY_RIGHT)
-				snake_dir = move;
+			if (snake_dir == KEY_UP || snake_dir == KEY_DOWN)
+			{
+				if (move == KEY_LEFT || move == KEY_RIGHT)
+					snake_dir = move;
+			}
+			else if (snake_dir == KEY_LEFT || snake_dir == KEY_RIGHT)
+			{
+				if (move == KEY_UP || move == KEY_DOWN)
+					snake_dir = move;
+			}
 		}
 
 		//..check collision and move head acc to inp
@@ -115,20 +123,14 @@ int main()
 			snake.insert(snake.begin(), std::vector<int>{snake[0][0], snake[0][1] + 1});
 		}
 
-		/*
-		//..snake grow (+1) after every 5 moves
-		++count;
-		if (count % 5 == 0)
-			count = 0;
-		else
+		//..snake doesn't grow if head not in food
+		if (snake[0][0] != food_x || snake[0][1] != food_y)
 		{
 			board[snake.back()[0]][snake.back()[1]] = false;
 			snake.pop_back();
 		}
-		*/
-		std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::milliseconds(500)); 
-		board[snake.back()[0]][snake.back()[1]] = false;
-		snake.pop_back();
+		
+		std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::milliseconds(100)); 
 	}
 
 	//..close curses
