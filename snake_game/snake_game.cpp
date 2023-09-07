@@ -24,7 +24,7 @@ int main()
 	WINDOW *game_context, *score_board;
 
 	//..snake attributes
-	//char s_food = '*';
+	char s_food = '*';
 	char s_head = '@';
 	char s_body = '#';
 	
@@ -36,10 +36,10 @@ int main()
 	//..misc
 	int move, score;
 	int food_x, food_y;
+	bool food_exist;
 
 	//..terminate if terminal too small
-	getmaxyx(stdscr, scr_h, scr_w);
-	if (scr_h < (GAME_HEIGHT + 2) + SCORE_HEIGHT || scr_w < GAME_WIDTH + 2)
+	getmaxyx(stdscr, scr_h, scr_w); if (scr_h < (GAME_HEIGHT + 2) + SCORE_HEIGHT || scr_w < GAME_WIDTH + 2)
 	{
 		mvwprintw(stdscr, scr_h/2, scr_w/2, "Error: Terminal window too small");
 		getch();
@@ -53,13 +53,14 @@ int main()
 	refresh();
 
 	//..init vars
+	food_exist = false;
 	snake_dir = KEY_UP;
 	snake.push_back(std::vector<int>{GAME_HEIGHT/2, GAME_WIDTH/2}); //snake begin at center of screen
 	board[snake[0][0]][snake[0][1]] = true;							//marking snake head in board
 	//..main game loop
 	while (1)
 	{
-		//..RENDERING THE SNAKE
+		//..RENDERING THE SNAKE AND FOOD
 		//..loop through snake vector and print elements at appro location in window
 		werase(game_context);
 		for (unsigned int i = 0; i < snake.size(); ++i)
@@ -69,6 +70,8 @@ int main()
 			else
 				mvwprintw(game_context, snake[i][0] + 1, snake[i][1] + 1, "%c", s_body);
 		}
+		if (food_exist)
+			mvwprintw(game_context, food_x + 1, food_y + 1, "%c", s_food);
 		box(game_context, 0, 0);
 		wrefresh(game_context);
 
@@ -139,6 +142,32 @@ int main()
 		{
 			board[snake.back()[0]][snake.back()[1]] = false;
 			snake.pop_back();
+		}
+		else
+			food_exist = false;
+
+		if (food_exist == false)
+		{
+			while (1)
+			{
+				bool is_colliding = false;
+
+				food_x = rand() % GAME_HEIGHT;
+				food_y = rand() % GAME_WIDTH;
+
+				for (unsigned int i = 0; i < snake.size(); ++i)
+				{
+					if (food_x == snake[i][0] && food_y == snake[i][1])
+					{
+						is_colliding = true;
+						break;
+					}
+				}
+
+				if (is_colliding == false)
+					break;
+			}
+			food_exist = true;
 		}
 		
 		std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::milliseconds(100)); 
