@@ -7,6 +7,9 @@
 #define GAME_WIDTH 60
 #define GAME_HEIGHT 30
 
+#define SCORE_WIDTH 60
+#define SCORE_HEIGHT 3
+
 int main()
 {
 	//..init curses
@@ -18,7 +21,7 @@ int main()
 	int scr_h, scr_w;
 
 	//..all windows
-	WINDOW *game_context;
+	WINDOW *game_context, *score_board;
 
 	//..snake attributes
 	//char s_food = '*';
@@ -31,12 +34,12 @@ int main()
 	bool board[GAME_HEIGHT][GAME_WIDTH] = {0};
 
 	//..misc
-	int move;
+	int move, score;
 	int food_x, food_y;
 
 	//..terminate if terminal too small
 	getmaxyx(stdscr, scr_h, scr_w);
-	if (scr_h < GAME_HEIGHT + 2 || scr_w < GAME_WIDTH + 2)
+	if (scr_h < (GAME_HEIGHT + 2) + SCORE_HEIGHT || scr_w < GAME_WIDTH + 2)
 	{
 		mvwprintw(stdscr, scr_h/2, scr_w/2, "Error: Terminal window too small");
 		getch();
@@ -46,6 +49,7 @@ int main()
 
 	//..creating the game context window
 	game_context = newwin(GAME_HEIGHT + 2, GAME_WIDTH + 2, (scr_h/2) - (GAME_HEIGHT/2), (scr_w/2) - (GAME_WIDTH/2));
+	score_board = newwin(SCORE_HEIGHT, SCORE_WIDTH + 2, (scr_h/2) - (GAME_HEIGHT/2) - SCORE_HEIGHT, (scr_w/2) - (SCORE_WIDTH/2)); //..+2 to account for width in game_context 
 	refresh();
 
 	//..init vars
@@ -67,6 +71,13 @@ int main()
 		}
 		box(game_context, 0, 0);
 		wrefresh(game_context);
+
+		//..RENDERING THE SCORE
+		score = snake.size();
+		werase(score_board);
+		box(score_board, 0, 0);
+		mvwprintw(score_board, 1, 1, " SCORE: %d", score);
+		wrefresh(score_board);
 
 
 		//..READ INPUT AND MOVE SNAKE ACCORDINGLY
